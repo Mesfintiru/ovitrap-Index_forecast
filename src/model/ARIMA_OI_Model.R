@@ -83,9 +83,6 @@ model <- Arima(tsOI_KLL,order=c(1,0,1), seasonal=list(order=c(1, 1, 1), period=1
 summary(model)
 
 
-sarima(tsOI_KLL, 1,0,1,1,1,1,12,xreg = xreg)
-
-
 # training and  forcasting test set 
 
 tsOI_KLL <-ts(OI_KLLag)
@@ -98,9 +95,6 @@ lines(test, col="red")
 legend("top",lty=1, bty = "n",col=c("red","blue"),c("Observed Test data","Predicted"))
 accuracy(fc, test) 
 fc
-
-# ploting predicted vs observed 
-
 
 
 # Exporting the forecast as excell sheet   
@@ -115,7 +109,7 @@ arima_f_e<-test-forecast_A$mean
 MSE<-mean((arima_f_e<-test-forecast_A$mean)^2) 
 sqrt(MSE)
 
-# Diebold-Mariano test of predicitve accuracy multivaria and univariate model
+# Diebold-Mariano test of predicitve accuracy of multivaria and univariate model
 
 fit_A <- Arima(training,order=c(1,0,1), seasonal=list(order=c(1, 1, 1), period=12), xreg=xreg[1:105,]) 
 fc1 <- forecast(fit_A, xreg=xreg[106:117,])
