@@ -22,7 +22,7 @@ library(TSA)
 library(openxlsx)
 
 
-# Detecting seasonality and period of seasonality 
+# Detecting Seasonality and Period of Seasonality 
 
 # fourier tranfformation  
 
@@ -34,7 +34,7 @@ top2 = head(order, 2)
 top2
 
 # display the 2 highest "power" frequencies
-top2
+top2 
 
 time = 1/top2$f
 time
@@ -45,7 +45,7 @@ sqrt_Data_OI <-sqrt(Data_OI)
 
 # changing the data to time series(ts)format 
 
-tsData_OI <-ts(Data_OI,frequency = 12)
+tsData_OI <-ts(sqrt_Data_OI,frequency = 12)
 
 # ploting the ts data
 
@@ -94,7 +94,7 @@ summary(model)
 
 # training and  forcasting test set 
 
-tsData_OI <-ts(Data_OI)
+tsData_OI <-ts(sqrt_Data_OI)
 training <- window(tsData_OI,end=105)
 test <- window(tsData_OI,start=106)
 fit_A <- Arima(training,order=c(1,0,1), seasonal=list(order=c(1, 1, 1), period=12), xreg=xreg[1:105,]) 
@@ -128,5 +128,4 @@ fc2 <-forecast(fit_B,h=12)
 fc1_e<-test-fc1$mean 
 fc2_e<-test-fc2$mean 
 
-
-dm.test(fc1_e,fc2_e)
+dm.test(fc1_e,fc2_e) 
