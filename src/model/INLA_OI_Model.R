@@ -84,7 +84,7 @@ info.meanTemperature <- getRelevantCoefAndVcov("cb.meanTemperature", inla.fit$su
 info.totalRainfall <- getRelevantCoefAndVcov("cb.totalRainfall", inla.fit$summary.fixed,
                                              inla.coef, inla.vcov) 
 
-# Prediction 
+# Predicted and observed data points plots
 predicted <- rep(NA,120)
 inla.intercept <- inla.fit$summary.fixed$mean[1]
 for (row_i in 7:120) { 
@@ -100,19 +100,19 @@ lines(predicted, col="blue")
 legend("top",lty=1,bty = "n",col=c("red","blue"),c("observed","predicted"))
 
 
-# predicting the last 12 months using missing values(NA) approach   
+# predicting the last 12 months using missing values(NA) approach,using 9 years data   
 
 n.pred = 12
 y=data$ovitrap_idx[1:108]
 yy = c(y, rep(NA, n.pred))
 
 
-#creating data frame wiht NA values
+# creating data frame wiht NA values
 Data <- data.frame(yy,data$temperature_avg,data$total_rain,data$month,data$year)
 
 formula1 <- yy ~  cb.meanTemperature + cb.totalRainfall + f(data.month, model="rw1") + f(data.year, model="iid") 
 inla.fit2 <- inla(formula=formula1, data=Data,
-                  control.fixed=list(correlation.matrix=T),control.predictor = list(link = 1),
+                  control.fixed=list(correlation.matrix=T),control.predictor = list(link = 1),  
                   control.compute=list(dic=T, waic=T)) 
 
 
