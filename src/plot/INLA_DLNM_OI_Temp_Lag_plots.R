@@ -5,7 +5,7 @@ rm(list=ls(all=TRUE))
 area <- "KL"
 
 # load from csv file into 'data' variable
-filePath <- paste("../../data/monthly_data_", area, ".csv", sep="") 
+filePath <- paste("data/monthly_data_", area, ".csv", sep="") 
 data <- read.csv(filePath, header=T)
 
 # clean data (esp. those with '#')
@@ -80,5 +80,3 @@ plot(pred.meanTemperature, "contour",
 
 print(inla.fit$dic$dic)
 print(inla.fit$waic$waic)
-
-
