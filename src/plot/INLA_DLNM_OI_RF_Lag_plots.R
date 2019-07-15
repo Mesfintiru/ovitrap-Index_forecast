@@ -18,12 +18,12 @@ library("dlnm")
 library("splines")
 
 # create crossbasis variables
-cb.meanTemperature <- crossbasis(data$temperature_avg, lag=4, 
+cb.meanTemperature <- crossbasis(data$temperature_avg, lag=6, 
                                  argvar=list(fun="ns", df=3),
-                                 arglag=list(fun="ns", knots=logknots(4, 1)))
-cb.totalRainfall <- crossbasis(data$total_rain, lag=2,
+                                 arglag=list(fun="ns", knots=logknots(6, 1)))
+cb.totalRainfall <- crossbasis(data$total_rain, lag=6,
                                argvar=list(fun="ns", df=3),
-                               arglag=list(fun="ns", knots=logknots(2, 1)))
+                               arglag=list(fun="ns", knots=logknots(6, 1)))
 
 getUpdatedColnames <- function(varName, oldColnames) {
   newColnames <- c()
