@@ -116,7 +116,7 @@ inla.fit2 <- inla(formula=formula1, data=Data,
                   control.compute=list(dic=T, waic=T)) 
 
 
-#ploting the oredicted values 
+#ploting the Predicted values 
 
 inla.fit2$summary.fitted.values 
 plot(yy, type="l", col="red",main=" ", ylab="Ovitrap Index", xlab="Months")
