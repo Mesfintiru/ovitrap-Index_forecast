@@ -78,5 +78,3 @@ plot(pred.meanTemperature, "contour",
      key.title=title("RR"))
 
 
-print(inla.fit$dic$dic)
-print(inla.fit$waic$waic)
