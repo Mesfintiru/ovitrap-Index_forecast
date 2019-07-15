@@ -2,7 +2,7 @@
 
 rm(list=ls(all=TRUE))
 
-Data <- read.csv("../../data/monthly_data_KL_3lagged.csv", sep = ",", header = TRUE) 
+Data <- read.csv("data/monthly_data_KL_3lagged.csv", sep = ",", header = TRUE) 
 
 Data_OI <-Data$ovitrap_idx  
 
@@ -129,3 +129,4 @@ fc1_e<-test-fc1$mean
 fc2_e<-test-fc2$mean 
 
 dm.test(fc1_e,fc2_e) 
+
