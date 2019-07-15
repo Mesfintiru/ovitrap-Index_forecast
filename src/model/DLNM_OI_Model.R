@@ -17,34 +17,15 @@ for (fieldName in names(data)) {
 library("dlnm")
 library("splines")
 
-cb.meanTemperature <- crossbasis(data$temperature_avg, lag=6, 
+cb.meanTemperature <- crossbasis(data$temperature_avg, lag=4, 
                                  argvar=list(fun="ns", df=3),
-                                 arglag=list(fun="ns", knots=logknots(6, 1)))
-cb.totalRainfall <- crossbasis(data$total_rain, lag=6,
+                                 arglag=list(fun="ns", knots=logknots(4, 1)))
+cb.totalRainfall <- crossbasis(data$total_rain, lag=2,
                                argvar=list(fun="ns", df=3),
-                               arglag=list(fun="ns", knots=logknots(6, 1)))
+                               arglag=list(fun="ns", knots=logknots(2, 1)))
      
 model <- glm(ovitrap_idx ~ cb.meanTemperature + cb.totalRainfall , family=gaussian(), data)     
 summary(model)
 
 
 
-# model prediction 
-
-
-pred.meanTemperature <- crosspred(cb.meanTemperature, model, by=0.5) 
-
-plot(pred.meanTemperature, xlab="Temperature", zlab="RR", ylab="Lag")
-
-plot(pred.meanTemperature, "contour", 
-     plot.title = title(xlab="Temperature", ylab="Lag", main="Contour Graph"), 
-     key.title=title("RR"))
-
-
-pred.totalRainfall <- crosspred(cb.totalRainfall, model,bylag=1)
-
-plot(pred.totalRainfall, xlab="Rainfall", zlab="RR", ylab="Lag") 
-
-plot(pred.totalRainfall, "contour",
-     plot.title = title(xlab="Rainfall", ylab="Lag", main="Contour Graph"), 
-     key.title=title("RR")) 
