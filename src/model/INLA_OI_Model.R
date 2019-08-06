@@ -1,17 +1,25 @@
 # clean the environment
+
 rm(list=ls(all=TRUE))
 
-# select an area between: NTS, NTN, KL, HK
+
+# select an area between: NTS, NTN, KL, HK 
+
 area <- "KL"
 
+
 # load from csv file into 'data' variable
-filePath <- paste("data/monthly_data_", area, ".csv", sep="")
+
+data <- paste("data/monthly_data_Poisson_", area, ".csv", sep="") 
+
 data <- read.csv(filePath, header=T)
+
 
 # clean data (esp. those with '#')
 for (fieldName in names(data)) {
   data[[fieldName]] <- as.numeric(gsub("[^.0-9]", "", data[[fieldName]]))
 }
+
 
 library("INLA")
 library("dlnm")
@@ -21,18 +29,15 @@ library(forecast)
 
 # create crossbasis variables
 
-cb.meanTemperature <- crossbasis(data$temperature_avg, lag=4, 
+cb.meanTemperature <- crossbasis(data$temperature_avg, lag=3, 
                                  argvar=list(fun="ns", df=3),
-                                 arglag=list(fun="ns", knots=logknots(4,1))) 
-cb.totalRainfall <- crossbasis(data$total_rain, lag=2,
+                                 arglag=list(fun="ns", knots=logknots(3, 1)))
+cb.totalRainfall <- crossbasis(data$total_rain, lag=6,
                                argvar=list(fun="ns", df=3),
-                               arglag=list(fun="ns", knots=logknots(2, 1))) 
+                               arglag=list(fun="ns", knots=logknots(6, 1)))
 
 
-
-
-
-getUpdatedColnames <- function(varName, oldColnames) {
+getUpdatedColnames <- function(varName, oldColnames) { 
   newColnames <- c()
   for (colname_i in 1:length(oldColnames)) {
     newColnames[colname_i] <- paste(varName,
@@ -56,80 +61,37 @@ colnames(cb.meanTemperature) <- getUpdatedColnames("cb.meanTemperature", colname
 colnames(cb.totalRainfall) <- getUpdatedColnames("cb.totalRainfall", colnames(cb.totalRainfall))
 
 
-#inla.fit<- inla(ovitrap_idx ~ cb.meanTemperature  + cb.totalRainfall,
-                 #data=data,
-                 #control.fixed=list(correlation.matrix=T),
-                 #control.compute=list(dic=T, waic=T, config=T, cpo=T)) 
-
 
 # INLA with rw1 and and yearly random effect 
 
-formula1 <- ovitrap_idx ~  cb.meanTemperature  + cb.totalRainfall  + f(month, model="rw1") + f(year,model="iid")    
+formula1 <- TPC ~  cb.meanTemperature + cb.totalRainfall + f(month, model="rw1") + f(year, model="iid") 
 
-inla.fit <- inla(formula=formula1, data=data,  
+inla.fit <- inla(formula=formula1, data=data,family = 'poisson',
                  control.fixed=list(correlation.matrix=T),
-                 control.compute=list(dic=T, waic=T, config=T, cpo=T)) 
+                 control.compute=list(dic=T, waic=T)) 
 
 
+summary(inla.fit)
+
+# Printing DIC and WAIC values 
 print(inla.fit$dic$dic)
 print(inla.fit$waic$waic)
 
 
-inla.coef <- inla.fit$summary.fixed$mean   
-inla.vcov <- inla.fit$misc$lincomb.derived.covariance.matrix    
-
-# obtaining values relevant to cb.meanTemperature and cb.totalrRainfall
-info.meanTemperature <- getRelevantCoefAndVcov("cb.meanTemperature", inla.fit$summary.fixed,
-                                               inla.coef, inla.vcov) 
-info.totalRainfall <- getRelevantCoefAndVcov("cb.totalRainfall", inla.fit$summary.fixed,
-                                             inla.coef, inla.vcov) 
-
-# Ploting the Predicted and observed values  
-predicted <- rep(NA,120)
-inla.intercept <- inla.fit$summary.fixed$mean[1]
-for (row_i in 7:120) { 
-  temp.row <- cb.meanTemperature[row_i,]
-  rain.row <- cb.totalRainfall[row_i,]
-  
-  predicted[row_i] <- sum(temp.row * info.meanTemperature$coef) +  
-    sum(rain.row * info.totalRainfall$coef) + inla.intercept          
-}
-predicted[predicted < 0] <- 0 
-plot(data$ovitrap_idx, type="l", col="red")
-lines(predicted, col="blue")
-legend("top",lty=1,bty = "n",col=c("red","blue"),c("observed","predicted"))
+# summary
 
 
-# predicting the last 12 months using missing values(NA) approach   
+# Extracting coef/vcov/posterior distribution /linear predictor distribution 
 
-n.pred = 12
-y=data$ovitrap_idx[1:108]
-yy = c(y, rep(NA, n.pred))
-
-
-#creating data frame wiht NA values
-Data <- data.frame(yy,data$temperature_avg,data$total_rain,data$month,data$year)
-
-formula1 <- yy ~  cb.meanTemperature + cb.totalRainfall + f(data.month, model="rw1") + f(data.year, model="iid") 
-inla.fit2 <- inla(formula=formula1, data=Data,
-                  control.fixed=list(correlation.matrix=T),control.predictor = list(link = 1),
-                  control.compute=list(dic=T, waic=T)) 
+inla.coef <- inla.fit$summary.fixed$mean 
+inla.vcov <- inla.fit$misc$lincomb.derived.covariance.matrix         
+inla.fixed <- inla.fit$summary.fixed
+inla.predictor <- inla.fit$summary.linear.predictor
 
 
-#ploting the oredicted values 
 
-inla.fit2$summary.fitted.values 
-plot(yy, type="l", col="red",main=" ", ylab="Ovitrap Index", xlab="Months")
-lines(inla.fit2$summary.fitted.values$mean, col="blue")
-legend("top",lty=1,bty = "n",col=c("red","blue"),c("observed","predicted"))
+# Plotting the posterior distribution of the cross basis predictors 
 
+plot(inla.fit, plot.fixed.effects = TRUE, plot.lincomb = FALSE, plot.random.effects = FALSE, plot.hyperparameters = FALSE,
+     plot.predictor = FALSE, plot.q = FALSE, plot.cpo = FALSE, single = FALSE)
 
-# getting the predicted values
-
-forecast_values <- predicted[109:120]
-library(openxlsx)
-forecast_values <- write.xlsx(forecast_values, 'forecast_values.xlsx')
-predicted[row_i]
-
-# calculating accuracy of prediction 
-accuracy(predicted,data$ovitrap_idx)
