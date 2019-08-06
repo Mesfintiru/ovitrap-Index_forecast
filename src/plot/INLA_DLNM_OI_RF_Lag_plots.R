@@ -77,7 +77,7 @@ indcoef <- grep(cond, rownames(inla.fit$summary.fixed))
 inla.coef <- inla.coef[indcoef]
 inla.vcov <- inla.vcov[indvcov,indvcov,drop=FALSE]
 
-# DLNM model prediction
+# Model prediction
 
 pred.totalRainfall <- crosspred(cb.totalRainfall, bylag=1,  coef=inla.coef, vcov=inla.vcov, cumul=TRUE)
 
