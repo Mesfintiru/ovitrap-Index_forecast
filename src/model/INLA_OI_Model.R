@@ -78,8 +78,6 @@ print(inla.fit$dic$dic)
 print(inla.fit$waic$waic)
 
 
-# summary
-
 
 # Extracting coef/vcov/posterior distribution /linear predictor distribution 
 
